@@ -1,5 +1,5 @@
 const Web3 = require('web3');
-const abi = require('./abi.json');
+const abi = require('../abi.json');
 const argv = require('minimist')(process.argv);
 
 require('dotenv').config();
@@ -13,7 +13,7 @@ async function getContractObject() {
     }
 };
 
-async function simulate() {
+module.exports = async function simulate() {
     // Parsing provided amount of ETH to wei (18 decimals)
     let amount = parseInt(argv["amount"]);
 
@@ -32,9 +32,9 @@ async function simulate() {
         console.log(`Pool reserves: ${reserveETH} ETH, ${reserveUSDT} USDT.`);
         const newUSDTPrice = reserveUSDT / (reserveETH + amount);
         console.log(`Swap of ${amount} ETH would return ${newUSDTPrice * amount} USDT.`);
+
+        return newUSDTPrice * amount;
     } else {
         throw('Failed to retrieve reserve from contract.');
     }
 };
-
-simulate();
