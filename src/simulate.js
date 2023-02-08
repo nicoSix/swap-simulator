@@ -1,7 +1,5 @@
 const Web3 = require('web3');
 const abi = require('../abi.json');
-const argv = require('minimist')(process.argv);
-
 require('dotenv').config();
 
 async function getContractObject() {
@@ -13,28 +11,25 @@ async function getContractObject() {
     }
 };
 
-module.exports = async function simulate() {
-    // Parsing provided amount of ETH to wei (18 decimals)
-    let amount = parseInt(argv["amount"]);
+function computeSwapReturn(amount, ethReserve, usdtReserve) {
+    const reserveETH = ethReserve / (10 ** 18);
+    const reserveUSDT = usdtReserve / (10 ** 6);
+    const newUSDTPrice = reserveUSDT / (reserveETH + amount);
 
-    if (isNaN(amount)) {
-        amount = 1;
-    }
+    return newUSDTPrice * amount;
+}
 
-    console.log(`Provided amount: ${amount} ETH.`);
-
+module.exports = async function simulate(providedAmount) {
     const contract = await getContractObject();
     const { _reserve0, _reserve1 } = await contract.methods.getReserves().call();
 
-    if (!isNaN(_reserve0) && !isNaN(_reserve1)) {
-        const reserveETH = _reserve0 / (10 ** 18);
-        const reserveUSDT = _reserve1 / (10 ** 6);
-        console.log(`Pool reserves: ${reserveETH} ETH, ${reserveUSDT} USDT.`);
-        const newUSDTPrice = reserveUSDT / (reserveETH + amount);
-        console.log(`Swap of ${amount} ETH would return ${newUSDTPrice * amount} USDT.`);
-
-        return newUSDTPrice * amount;
-    } else {
+    if (isNaN(_reserve0) || isNaN(_reserve1) || (_reserve0 / (10 ** 18)) < providedAmount) {
         throw('Failed to retrieve reserve from contract.');
     }
+
+    const returnedAmount = computeSwapReturn(providedAmount, _reserve0, _reserve1);
+
+    console.log(`Swap of ${providedAmount} ETH would return ${returnedAmount.toFixed(2)} USDT.`);
+
+    return returnedAmount;
 };
