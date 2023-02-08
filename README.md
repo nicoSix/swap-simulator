@@ -10,7 +10,7 @@ Make sure that Node is installed on your machine (v18).
 
 To install the required dependencies, simply execute the following command:
 
-```bash
+```
 $ npm install
 ```
 
@@ -19,4 +19,10 @@ $ npm install
 ```
 $ npm run simulate --amount 10 // simulate the price for swapping 10 ETH to USDT
 $ npm run simulate // simulate by default the price of swapping 1 ETH
+```
+
+## Test
+
+```
+$ npm test
 ```
