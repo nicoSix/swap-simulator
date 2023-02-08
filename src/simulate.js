@@ -2,6 +2,10 @@ const Web3 = require('web3');
 const abi = require('../abi.json');
 require('dotenv').config();
 
+/**
+ * getContractObject: generate contract wrapper from ABI and endpoint info
+ * @returns Contract wrapping the Uniswap contract methods
+ */
 async function getContractObject() {
     const web3 = new Web3(process.env.API_ENDPOINT + process.env.API_KEY);
     if (await web3.eth.net.isListening()) {
@@ -11,6 +15,13 @@ async function getContractObject() {
     }
 };
 
+/**
+ * computeSwapReturn returns the amount of USDT obtained by swapping ETH
+ * @param {number} amount amount to swap in ETH
+ * @param {number} ethReserve amount in pool reserve in ETH 
+ * @param {number} usdtReserve amount in pool reserve in USDT
+ * @returns 
+ */
 function computeSwapReturn(amount, ethReserve, usdtReserve) {
     const reserveETH = ethReserve / (10 ** 18);
     const reserveUSDT = usdtReserve / (10 ** 6);
@@ -19,6 +30,11 @@ function computeSwapReturn(amount, ethReserve, usdtReserve) {
     return newUSDTPrice * amount;
 }
 
+/**
+ * simulate: simulate the return in USDT from a provided amount in ETH
+ * @param {number} providedAmount amount to swap in ETH
+ * @returns 
+ */
 module.exports = async function simulate(providedAmount) {
     const contract = await getContractObject();
     const { _reserve0, _reserve1 } = await contract.methods.getReserves().call();
