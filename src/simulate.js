@@ -23,11 +23,10 @@ async function getContractObject() {
  * @returns 
  */
 function computeSwapReturn(amount, ethReserve, usdtReserve) {
-    const reserveETH = ethReserve / (10 ** 18);
-    const reserveUSDT = usdtReserve / (10 ** 6);
-    const newUSDTPrice = reserveUSDT / (reserveETH + amount);
-
-    return newUSDTPrice * amount;
+    const amountWithFees = BigInt(0.997 * amount * (10 ** 18));
+    const reserveETH = BigInt(ethReserve);
+    const reserveUSDT = BigInt(usdtReserve);
+    return (amountWithFees * reserveUSDT) / (reserveETH + amountWithFees);
 }
 
 /**
@@ -45,7 +44,7 @@ module.exports = async function simulate(providedAmount) {
 
     const returnedAmount = computeSwapReturn(providedAmount, _reserve0, _reserve1);
 
-    console.log(`Swap of ${providedAmount} ETH would return ${returnedAmount.toFixed(2)} USDT.`);
+    console.log(`Swap of ${providedAmount} ETH would return ${(Number(returnedAmount) / (10 ** 6)).toFixed(2)} USDT.`);
 
     return returnedAmount;
 };
